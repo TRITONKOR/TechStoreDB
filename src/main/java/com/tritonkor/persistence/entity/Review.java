@@ -77,8 +77,25 @@ public class Review extends Entity {
         return createdAt;
     }
 
+    /**
+     * Set the timestamp when the review was created.
+     */
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    /**
+     * Set the text of review.
+     */
+    public void setText(String text) {
+        this.text = text;
+    }
+
+    /**
+     * Set the grade of review.
+     */
+    public void setGrade(int grade) {
+        this.grade = new Grade(grade);
     }
 
     public static ReviewBuilder builder() {

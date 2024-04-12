@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +34,7 @@ public class ReviewDao extends Dao<Review> {
     // language=H2
     private static final String SAVE_SQL =
             """
-            INSERT INTO REVIEWS(OWNER_ID, TECHNIQUE_ID, TEXT, GRADE, CREATE_TIME)
+            INSERT INTO REVIEWS(owner_id, technique_id, text, grade, create_time)
             VALUES (?, ?, ?, ?, ?);
             """;
     // language=H2
@@ -100,12 +101,13 @@ public class ReviewDao extends Dao<Review> {
             statement.setInt(2, review.getTechnique().getId());
             statement.setString(3, review.getText());
             statement.setInt(4, review.getGrade().getGrade());
+            statement.setTimestamp(5, Timestamp.valueOf(review.getCreatedAt()));
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
             if (generatedKeys.next()) {
-                review.setId(generatedKeys.getInt("ID"));
-                review.setCreatedAt(generatedKeys.getTimestamp("CREATE_TIME").toLocalDateTime());
+                review.setId(generatedKeys.getInt("id"));
+                review.setCreatedAt(generatedKeys.getTimestamp("create_time").toLocalDateTime());
             }
             return review;
         } catch (SQLException e) {
