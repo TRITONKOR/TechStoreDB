@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import com.tritonkor.persistence.ConnectionPool;
 import com.tritonkor.persistence.Dao;
 import com.tritonkor.persistence.entity.Review;
+import com.tritonkor.persistence.entity.Technique;
 import com.tritonkor.persistence.exception.persistence.NoResultException;
 import com.tritonkor.persistence.exception.persistence.PersistenceException;
 import com.tritonkor.persistence.filter.ReviewFilter;
@@ -48,6 +49,31 @@ public class ReviewDao extends Dao<Review> {
              WHERE ID = ?;
             """;
 
+    // language=H2
+    private static final String GET_TECHNIQUE_SQL =
+            """
+            SELECT t.id,
+                   t.price,
+                   t.company,
+                   t.model
+              FROM techniques AS t
+                   JOIN techniques_reviews AS t_r
+                     ON t.id = t_r.technique_id
+             WHERE t_r.review_id = ?;
+            """;
+
+    // language=H2
+    private static final String ATTACH_TO_TECHNIQUE_SQL =
+            """
+            INSERT INTO techniques_reviews(technique_id, review_id)
+            VALUES (?, ?);
+            """;
+    // language=H2
+    private static final String DETACH_FROM_TECHNIQUE_SQL =
+            """
+            DELETE FROM techniques_reviews
+                  WHERE technique_id = ? AND review_id = ?;
+            """;
 
     /**
      * We get a filtered collection of entities.
@@ -136,6 +162,30 @@ public class ReviewDao extends Dao<Review> {
     @Override
     protected String getTableName() {
         return "REVIEWS";
+    }
+
+    public boolean attachToReview(int techniqueId, int reviewId) {
+        return super.executeByTwoParams(techniqueId, reviewId, ATTACH_TO_TECHNIQUE_SQL);
+    }
+
+    public boolean detachFromReview(int techniqueId, int reviewId) {
+        return super.executeByTwoParams(techniqueId, reviewId, DETACH_FROM_TECHNIQUE_SQL);
+    }
+
+    public List<Technique> findAllTechniques(int reviewId) {
+        try (Connection connection = ConnectionPool.get();
+                PreparedStatement statement = connection.prepareStatement(GET_TECHNIQUE_SQL)) {
+            statement.setInt(1, reviewId);
+            ResultSet resultSet = statement.executeQuery();
+            var techniques = new ArrayList<Technique>(resultSet.getFetchSize());
+            while (resultSet.next()) {
+                techniques.add(TechniqueDao.getInstance().buildEntity(resultSet));
+            }
+            return techniques;
+        } catch (SQLException e) {
+            throw new PersistenceException(
+                    "При знаходженні всіх записів в %s".formatted(TechniqueDao.class.getSimpleName()));
+        }
     }
 
     @Override

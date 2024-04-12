@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.tritonkor.persistence.entity.Review;
+import com.tritonkor.persistence.entity.Technique;
 import com.tritonkor.persistence.util.DbInitialization;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -33,6 +34,16 @@ public class ReviewDaoTest {
         assertInstanceOf(List.class, reviews,
                 "Помилка: метод findAll повинен повертати List<>");
         assertFalse(reviews.isEmpty(),
+                "Помилка: повернений список не може бути пустим");
+    }
+
+    @Test
+    void testFindAllTechniquesForReview() {
+        List<Technique> techniques = reviewDao.findAllTechniques(1);
+
+        assertInstanceOf(List.class, techniques,
+                "Помилка: метод findAll повинен повертати List<>");
+        assertFalse(techniques.isEmpty(),
                 "Помилка: повернений список не може бути пустим");
     }
 

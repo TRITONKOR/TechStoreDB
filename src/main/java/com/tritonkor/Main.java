@@ -1,6 +1,7 @@
 package com.tritonkor;
 
 import com.tritonkor.persistence.ConnectionPool;
+import com.tritonkor.persistence.DaoFactory;
 import com.tritonkor.persistence.entity.Client;
 import com.tritonkor.persistence.entity.Review;
 import com.tritonkor.persistence.entity.Technique;
@@ -18,9 +19,11 @@ public class Main {
         try {
             DbInitialization.apply();
 
-            ClientDao clientDao = ClientDao.getInstance();
-            ReviewDao reviewDao = ReviewDao.getInstance();
-            TechniqueDao techniqueDao = TechniqueDao.getInstance();
+            DaoFactory daoFactory = DaoFactory.getDaoFactory();
+
+            ClientDao clientDao = daoFactory.getClientDao();
+            ReviewDao reviewDao = daoFactory.getReviewDao();
+            TechniqueDao techniqueDao = daoFactory.getTechniqueDao();
 
             clientDao.save(Client.builder().id(1).username("triton").password("password").build());
 
@@ -31,6 +34,8 @@ public class Main {
             System.out.println(clients);
             System.out.println(techniques);
             System.out.println(reviews);
+
+            System.out.println(techniqueDao.findAllReviews(1));
 
         } finally {
             try {
