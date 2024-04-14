@@ -49,7 +49,7 @@ public class ClientDaoTest {
     void testUpdateClient() {
         Client client = clientDao.findOneById(1).orElseThrow();
 
-        client.setHashPassword("newPassword");
+        client.setPassword("newPassword");
 
         clientDao.update(client);
 

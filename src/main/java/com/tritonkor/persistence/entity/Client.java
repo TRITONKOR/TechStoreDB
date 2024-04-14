@@ -12,13 +12,13 @@ public class Client extends Entity {
     /** The username of the client. */
     private String username;
 
-    /** The hashed password of the client. */
-    private String hashPassword;
+    /** The password of the client. */
+    private String password;
 
     public Client(ClientBuilder clientBuilder) {
         super(clientBuilder.id);
         this.username = clientBuilder.username;
-        this.hashPassword = clientBuilder.hash_password;
+        this.password = clientBuilder.password;
     }
 
     /**
@@ -31,20 +31,20 @@ public class Client extends Entity {
     }
 
     /**
-     * Gets the hashed password of the client.
+     * Gets the password of the client.
      *
-     * @return The hashed password.
+     * @return The password.
      */
-    public String getHashPassword() {
-        return hashPassword;
+    public String getPassword() {
+        return password;
     }
 
     public void setUsername(String username) {
         this.username = username;
     }
 
-    public void setHashPassword(String hashPassword) {
-        this.hashPassword = hashPassword;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public static ClientBuilder builder() {
@@ -55,7 +55,7 @@ public class Client extends Entity {
 
         private int id;
         private String username;
-        private String hash_password;
+        private String password;
 
         public ClientBuilder id(int id) {
             this.id = id;
@@ -68,7 +68,7 @@ public class Client extends Entity {
         }
 
         public ClientBuilder password(String password) {
-            this.hash_password = password;
+            this.password = password;
             return this;
         }
 
@@ -76,7 +76,7 @@ public class Client extends Entity {
          * Creates an instance of {@link Client}
          */
         public Client build() {
-            if (Stream.of(username, hash_password).anyMatch(s -> Objects.isNull(s) || s.isBlank())) {
+            if (Stream.of(username, password).anyMatch(s -> Objects.isNull(s) || s.isBlank())) {
                 throw new RequiredFieldsException();
             }
             return new Client(this);
@@ -96,19 +96,19 @@ public class Client extends Entity {
         }
         Client client = (Client) o;
         return Objects.equals(username, client.username) && Objects.equals(
-                hashPassword, client.hashPassword);
+                password, client.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, hashPassword);
+        return Objects.hash(username, password);
     }
 
     @Override
     public String toString() {
         return "Client{" +
                 "username='" + username + '\'' +
-                ", hashPassword='" + hashPassword + '\'' +
+                ", hashPassword='" + password + '\'' +
                 '}';
     }
 }

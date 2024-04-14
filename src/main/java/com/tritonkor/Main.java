@@ -1,5 +1,8 @@
 package com.tritonkor;
 
+import com.tritonkor.domain.services.dto.ClientAddDto;
+import com.tritonkor.domain.services.dto.TechniqueAddDto;
+import com.tritonkor.domain.services.handler.HandlerFactory;
 import com.tritonkor.persistence.ConnectionPool;
 import com.tritonkor.persistence.DaoFactory;
 import com.tritonkor.persistence.entity.Client;
@@ -10,6 +13,8 @@ import com.tritonkor.persistence.impl.ClientDao;
 import com.tritonkor.persistence.impl.ReviewDao;
 import com.tritonkor.persistence.impl.TechniqueDao;
 import com.tritonkor.persistence.util.DbInitialization;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class Main {
@@ -20,12 +25,21 @@ public class Main {
             DbInitialization.apply();
 
             DaoFactory daoFactory = DaoFactory.getDaoFactory();
+            HandlerFactory handlerFactory = HandlerFactory.getInstance();
 
             ClientDao clientDao = daoFactory.getClientDao();
             ReviewDao reviewDao = daoFactory.getReviewDao();
             TechniqueDao techniqueDao = daoFactory.getTechniqueDao();
 
-            clientDao.save(Client.builder().id(1).username("triton").password("password").build());
+            TechniqueAddDto techniqueAddDto = new TechniqueAddDto(1, 23.00, "asus", "iphone");
+
+            handlerFactory.getPriceHandler().validate(techniqueAddDto);
+
+            if (!techniqueAddDto.getValidationMessages().isEmpty()) {
+                System.out.println(techniqueAddDto.getValidationMessages());
+            }
+
+
 
             List<Client> clients = clientDao.findAll();
             List<Technique> techniques = techniqueDao.findAll();

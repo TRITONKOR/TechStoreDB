@@ -76,7 +76,7 @@ public final class ClientDao extends Dao<Client> {
                 PreparedStatement statement =
                         connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, client.getUsername());
-            statement.setString(2, client.getHashPassword());
+            statement.setString(2, client.getPassword());
 
             statement.executeUpdate();
             ResultSet generatedKeys = statement.getGeneratedKeys();
@@ -95,7 +95,7 @@ public final class ClientDao extends Dao<Client> {
         try (Connection connection = ConnectionPool.get();
                 PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
             statement.setString(1, client.getUsername());
-            statement.setString(2, client.getHashPassword());
+            statement.setString(2, client.getPassword());
             statement.setInt(3, client.getId());
 
             return statement.executeUpdate() > 0;

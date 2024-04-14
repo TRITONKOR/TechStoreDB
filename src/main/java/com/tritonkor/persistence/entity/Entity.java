@@ -1,5 +1,7 @@
 package com.tritonkor.persistence.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -14,12 +16,18 @@ public abstract class Entity {
     protected int id;
 
     /**
+     * Hold error messages.
+     */
+    private List<String>  validationMessages;
+
+    /**
      * Constructs an entity with the specified identifier.
      *
      * @param id The unique identifier for the entity.
      */
     public Entity(int id) {
         this.id = id;
+        this.validationMessages = new ArrayList<>();
     }
 
     /**
@@ -31,10 +39,25 @@ public abstract class Entity {
         return id;
     }
 
+    /**
+     * Sets the unique identifier of the entity.
+     *
+     * @return The unique identifier.
+     */
     public Entity setId(int id) {
         this.id = id;
         return this;
     }
+
+    /**
+     * Gets the error messag list of the entity.
+     *
+     * @return The unique identifier.
+     */
+    public List<String> getValidationMessages() {
+        return validationMessages;
+    }
+
     /**
      * Compares this entity with the specified object for equality.
      *
