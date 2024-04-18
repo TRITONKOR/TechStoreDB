@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class TechniqueDao extends Dao<Technique> {
 
@@ -188,6 +189,14 @@ public final class TechniqueDao extends Dao<Technique> {
             throw new PersistenceException(
                     "При знаходженні всіх записів в %s".formatted(ReviewDao.class.getSimpleName()));
         }
+    }
+
+    public Optional<Technique> findOneByModel(String model) {
+        return this.findAll().stream().filter(t -> t.getModel().equals(model)).findFirst();
+    }
+
+    public List<Technique> findByCompany(String company) {
+        return this.findAll().stream().filter(t -> t.getCompany().equals(company)).toList();
     }
 
     private TechniqueDao() {}

@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import com.tritonkor.persistence.ConnectionPool;
 import com.tritonkor.persistence.Dao;
 import com.tritonkor.persistence.entity.Client;
+import com.tritonkor.persistence.exception.persistence.EntityNotFoundException;
 import com.tritonkor.persistence.exception.persistence.NoResultException;
 import com.tritonkor.persistence.exception.persistence.PersistenceException;
 import com.tritonkor.persistence.filter.ClientFilter;
@@ -16,6 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class ClientDao extends Dao<Client> {
 
@@ -122,6 +124,11 @@ public final class ClientDao extends Dao<Client> {
             throw new NoResultException(
                     "Не вдалось отримати ResultSet в %s".formatted(ClientDao.class.getSimpleName()));
         }
+    }
+
+    public Optional<Client  > findOneByUsername(String username) {
+        return this.findAll().stream().filter(c -> c.getUsername().equals(username))
+                .findFirst();
     }
 
     private ClientDao() {}

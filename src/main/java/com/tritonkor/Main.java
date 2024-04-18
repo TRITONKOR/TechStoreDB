@@ -1,8 +1,7 @@
 package com.tritonkor;
 
-import com.tritonkor.domain.services.dto.ClientAddDto;
-import com.tritonkor.domain.services.dto.TechniqueAddDto;
-import com.tritonkor.domain.services.handler.HandlerFactory;
+import com.tritonkor.domain.dto.TechniqueAddDto;
+import com.tritonkor.domain.handler.HandlerFactory;
 import com.tritonkor.persistence.ConnectionPool;
 import com.tritonkor.persistence.DaoFactory;
 import com.tritonkor.persistence.entity.Client;
@@ -13,8 +12,6 @@ import com.tritonkor.persistence.impl.ClientDao;
 import com.tritonkor.persistence.impl.ReviewDao;
 import com.tritonkor.persistence.impl.TechniqueDao;
 import com.tritonkor.persistence.util.DbInitialization;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 public class Main {

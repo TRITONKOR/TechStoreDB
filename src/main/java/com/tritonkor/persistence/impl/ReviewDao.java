@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 
 import com.tritonkor.persistence.ConnectionPool;
 import com.tritonkor.persistence.Dao;
+import com.tritonkor.persistence.entity.Client;
 import com.tritonkor.persistence.entity.Review;
 import com.tritonkor.persistence.entity.Technique;
 import com.tritonkor.persistence.exception.persistence.NoResultException;
@@ -208,6 +209,14 @@ public class ReviewDao extends Dao<Review> {
             throw new NoResultException(
                     "Не вдалось отримати ResultSet в %s".formatted(ReviewDao.class.getSimpleName()));
         }
+    }
+
+    public List<Review> findByOwner(Client client) {
+        return this.findAll().stream().filter(r -> r.getOwner().equals(client)).toList();
+    }
+
+    public List<Review> findByTechnique(Technique technique) {
+        return this.findAll().stream().filter(r -> r.getTechnique().equals(technique)).toList();
     }
 
     private ReviewDao() {}
