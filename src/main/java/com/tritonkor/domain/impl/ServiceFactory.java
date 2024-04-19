@@ -4,6 +4,7 @@ import com.tritonkor.domain.contract.ClientService;
 import com.tritonkor.domain.contract.ReviewService;
 import com.tritonkor.domain.contract.TechniqueService;
 import com.tritonkor.domain.exception.DependencyException;
+import com.tritonkor.domain.handler.HandlerFactory;
 import com.tritonkor.persistence.DaoFactory;
 
 public class ServiceFactory {
@@ -17,6 +18,7 @@ public class ServiceFactory {
 
     public ServiceFactory(DaoFactory daoFactory) {
         this.daoFactory = daoFactory;
+        HandlerFactory handlerFactory = HandlerFactory.getInstance();
 
         clientService = new ClientServiceImpl(daoFactory.getClientDao());
         techniqueService = new TechniqueServiceImpl(daoFactory.getTechniqueDao());

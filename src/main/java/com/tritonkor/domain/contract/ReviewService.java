@@ -1,5 +1,6 @@
 package com.tritonkor.domain.contract;
 
+import com.tritonkor.domain.dto.ReviewAddDto;
 import com.tritonkor.persistence.entity.Client;
 import com.tritonkor.persistence.entity.Review;
 import com.tritonkor.persistence.entity.Technique;
@@ -10,4 +11,5 @@ public interface ReviewService {
     List<Review> findByOwner(Client client);
     List<Review> findByTechnique(Technique technique);
 
+    Review save(ReviewAddDto reviewAddDto);
 }
