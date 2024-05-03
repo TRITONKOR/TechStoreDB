@@ -21,30 +21,6 @@ import java.util.Optional;
 
 public final class ClientDao extends Dao<Client> {
 
-    // language=H2
-    private static final String FIND_ALL_SQL =
-            """
-            SELECT ID,
-                   USERNAME,
-                   PASSWORD
-              FROM CLIENTS
-            """;
-    // language=H2
-    private static final String SAVE_SQL =
-            """
-            INSERT INTO CLIENTS(USERNAME, PASSWORD)
-            VALUES (?, ?);
-            """;
-    // language=H2
-    private static final String UPDATE_SQL =
-            """
-            UPDATE CLIENTS
-               SET USERNAME = ?,
-                   PASSWORD = ?
-             WHERE ID = ?;
-            """;
-
-
     /**
      * We get a filtered collection of entities.
      *
@@ -65,7 +41,7 @@ public final class ClientDao extends Dao<Client> {
                     }
                 };
 
-        String sql = filterSelectHelper.getSql(FIND_ALL_SQL);
+        String sql = filterSelectHelper.getSql(findAllSql(getTableName()));
         parameters.add(filter.limit());
         parameters.add(filter.offset());
 
@@ -76,7 +52,8 @@ public final class ClientDao extends Dao<Client> {
     public Client save(Client client) {
         try (Connection connection = ConnectionPool.get();
                 PreparedStatement statement =
-                        connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                        connection.prepareStatement(saveSql(getTableName(), client),
+                                Statement.RETURN_GENERATED_KEYS)) {
             statement.setString(1, client.getUsername());
             statement.setString(2, client.getPassword());
 
@@ -88,14 +65,16 @@ public final class ClientDao extends Dao<Client> {
             return client;
         } catch (SQLException e) {
             throw new PersistenceException(
-                    "При збереженні запису в %s. %s".formatted(ClientDao.class.getSimpleName(), e.getMessage()));
+                    "При збереженні запису в %s. %s".formatted(ClientDao.class.getSimpleName(),
+                            e.getMessage()));
         }
     }
 
     @Override
     public boolean update(final Client client) {
         try (Connection connection = ConnectionPool.get();
-                PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
+                PreparedStatement statement = connection.prepareStatement(
+                        updateSql(getTableName(), client))) {
             statement.setString(1, client.getUsername());
             statement.setString(2, client.getPassword());
             statement.setInt(3, client.getId());
@@ -122,18 +101,34 @@ public final class ClientDao extends Dao<Client> {
                     .build();
         } catch (SQLException e) {
             throw new NoResultException(
-                    "Не вдалось отримати ResultSet в %s".formatted(ClientDao.class.getSimpleName()));
+                    "Не вдалось отримати ResultSet в %s".formatted(
+                            ClientDao.class.getSimpleName()));
         }
     }
 
-    public Optional<Client  > findOneByUsername(String username) {
+    public Optional<Client> findOneByUsername(String username) {
         return this.findAll().stream().filter(c -> c.getUsername().equals(username))
                 .findFirst();
     }
 
-    private ClientDao() {}
+    @Override
+    protected List<Object> tableValues(Client client) {
+        ArrayList<Object> values = new ArrayList<>();
+        values.add(client.getUsername());
+        values.add(client.getPassword());
+        return values;
+    }
+
+    @Override
+    protected List<String> tableAttributes() {
+        return tableAttributes(Client.class);
+    }
+
+    private ClientDao() {
+    }
 
     private static class ClientDaoHolder {
+
         public static final ClientDao HOLDER_INSTANCE = new ClientDao();
     }
 

@@ -5,6 +5,7 @@ import com.tritonkor.persistence.exception.RequiredFieldsException;
 import com.tritonkor.persistence.exception.persistence.EntityNotFoundException;
 import com.tritonkor.persistence.exception.persistence.PersistenceException;
 import com.tritonkor.persistence.impl.ClientDao;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -12,6 +13,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import static java.lang.StringTemplate.STR;
 
 public abstract class Dao<E extends Entity> {
     final String findAllSql = "SELECT * FROM %s".formatted(getTableName());
@@ -152,7 +155,74 @@ public abstract class Dao<E extends Entity> {
         }
     }
 
+    protected List<String> tableAttributes(Class<E> tClass) {
+        Field[] fields = tClass.getDeclaredFields();
+        List<String> names = new ArrayList<>();
+
+        for (Field field : fields) {
+            String fieldName = convertToSnakeCase(field.getName());
+
+            if (field.getType().isPrimitive()) {
+                names.add(fieldName.toLowerCase());
+            } else {
+                String fieldPackage = field.getType().getPackage() != null ? field.getType().getPackage().getName() : "";
+                if (!fieldName.equals("id")) {
+                    if (fieldPackage.equals(tClass.getPackage().getName())) {
+                        names.add(fieldName.toLowerCase() + "_id");
+                    } else {
+                        names.add(fieldName.toLowerCase());
+                    }
+                }
+            }
+        }
+
+        return names;
+    }
+
+    private static String convertToSnakeCase(String input) {
+        StringBuilder result = new StringBuilder();
+        for (String w : input.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])")) {
+            result.append(w).append("_");
+        }
+
+        String s = result.toString();
+        return s.toLowerCase().substring(0,s.length()-1);
+
+    }
+
+    protected String findAllSql(String tableName) {
+        return STR.
+                """
+                SELECT * FROM \{tableName}
+                """;
+    }
+
+    protected String saveSql(String tableName, E entity) {
+        List<Object> values = tableValues(entity);
+        List<String> listAttributes = tableAttributes();
+        String attributes = String.join(", ", listAttributes);
+
+        return STR.
+                """
+                INSERT INTO \{tableName}(\{attributes})
+                VALUES(\{values})
+                """;
+    }
+
+    protected String updateSql(String tableName, E entity) {
+        List<String> listAttributes = tableAttributes();
+        String attributes = listAttributes.stream().map(a -> STR."\{a} = ?").collect(Collectors.joining(", "));
+        return STR.
+                """
+                UPDATE \{tableName}
+                SET \{attributes}
+                WHERE id = ?;
+                """;
+    }
+
     protected abstract E buildEntity(final ResultSet resultSet);
 
     protected abstract String getTableName();
+    protected abstract List<String> tableAttributes();
+    protected abstract List<Object> tableValues(E entity);
 }

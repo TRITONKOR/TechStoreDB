@@ -32,12 +32,3 @@ CREATE TABLE reviews
         grade INT NOT NULL,
         create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
-
-CREATE TABLE techniques_reviews
-    (
-        PRIMARY KEY (technique_id, review_id),
-        technique_id INT NOT NULL
-            REFERENCES techniques (id),
-        review_id INT NOT NULL
-            REFERENCES reviews (id)
-    );

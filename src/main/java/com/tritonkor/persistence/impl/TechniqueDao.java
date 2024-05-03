@@ -4,6 +4,7 @@ import static java.util.Objects.nonNull;
 
 import com.tritonkor.persistence.ConnectionPool;
 import com.tritonkor.persistence.Dao;
+import com.tritonkor.persistence.entity.Client;
 import com.tritonkor.persistence.entity.Review;
 import com.tritonkor.persistence.entity.Technique;
 import com.tritonkor.persistence.exception.persistence.NoResultException;
@@ -20,61 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 public final class TechniqueDao extends Dao<Technique> {
-
-    // language=H2
-    private static final String FIND_ALL_SQL =
-            """
-            SELECT ID,
-                   PRICE,
-                   COMPANY,
-                   MODEL
-              FROM TECHNIQUES
-            """;
-    // language=H2
-    private static final String SAVE_SQL =
-            """
-            INSERT INTO TECHNIQUES(PRICE, COMPANY, MODEL)
-            VALUES (?, ?, ?);
-            """;
-    // language=H2
-    private static final String UPDATE_SQL =
-            """
-            UPDATE TECHNIQUES
-               SET PRICE = ?,
-                   COMPANY = ?,
-                   MODEL = ?
-             WHERE ID = ?;
-            """;
-
-    // language=H2
-    private static final String GET_REVIEWS_SQL =
-            """
-            SELECT r.id,
-                   r.owner_id,
-                   r.technique_id,
-                   r.text,
-                   r.grade,
-                   r.create_time
-              FROM reviews AS r
-                   JOIN techniques_reviews AS t_r
-                     ON r.id = t_r.review_id
-             WHERE t_r.technique_id = ?;
-            """;
-
-    // language=H2
-    private static final String ATTACH_TO_REVIEW_SQL =
-            """
-            INSERT INTO techniques_reviews(technique_id, review_id)
-            VALUES (?, ?);
-            """;
-    // language=H2
-    private static final String DETACH_FROM_REVIEW_SQL =
-            """
-            DELETE FROM techniques_reviews
-                  WHERE technique_id = ? AND review_id = ?;
-            """;
-
-
     /**
      * We get a filtered collection of entities.
      *
@@ -103,7 +49,7 @@ public final class TechniqueDao extends Dao<Technique> {
                     }
                 };
 
-        String sql = filterSelectHelper.getSql(FIND_ALL_SQL);
+        String sql = filterSelectHelper.getSql(findAllSql(getTableName()));
         parameters.add(filter.limit());
         parameters.add(filter.offset());
 
@@ -114,7 +60,7 @@ public final class TechniqueDao extends Dao<Technique> {
     public Technique save(Technique technique) {
         try (Connection connection = ConnectionPool.get();
                 PreparedStatement statement =
-                        connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                        connection.prepareStatement(saveSql(getTableName(), technique), Statement.RETURN_GENERATED_KEYS)) {
             statement.setDouble(1, technique.getPrice());
             statement.setString(2, technique.getCompany());
             statement.setString(3, technique.getModel());
@@ -134,7 +80,7 @@ public final class TechniqueDao extends Dao<Technique> {
     @Override
     public boolean update(final Technique technique) {
         try (Connection connection = ConnectionPool.get();
-                PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
+                PreparedStatement statement = connection.prepareStatement(updateSql(getTableName(), technique))) {
             statement.setDouble(1, technique.getPrice());
             statement.setString(2, technique.getCompany());
             statement.setString(3, technique.getModel());
@@ -145,14 +91,6 @@ public final class TechniqueDao extends Dao<Technique> {
             throw new PersistenceException(
                     "При оновленні запису в %s".formatted(TechniqueDao.class.getSimpleName()));
         }
-    }
-
-    public boolean attachToReview(int techniqueId, int reviewId) {
-        return super.executeByTwoParams(techniqueId, reviewId, ATTACH_TO_REVIEW_SQL);
-    }
-
-    public boolean detachFromReview(int techniqueId, int reviewId) {
-        return super.executeByTwoParams(techniqueId, reviewId, DETACH_FROM_REVIEW_SQL);
     }
 
     @Override
@@ -175,28 +113,26 @@ public final class TechniqueDao extends Dao<Technique> {
         }
     }
 
-    public List<Review> findAllReviews(int techniqueId) {
-        try (Connection connection = ConnectionPool.get();
-                PreparedStatement statement = connection.prepareStatement(GET_REVIEWS_SQL)) {
-            statement.setInt(1, techniqueId);
-            ResultSet resultSet = statement.executeQuery();
-            var reviews = new ArrayList<Review>(resultSet.getFetchSize());
-            while (resultSet.next()) {
-                reviews.add(ReviewDao.getInstance().buildEntity(resultSet));
-            }
-            return reviews;
-        } catch (SQLException e) {
-            throw new PersistenceException(
-                    "При знаходженні всіх записів в %s".formatted(ReviewDao.class.getSimpleName()));
-        }
-    }
-
     public Optional<Technique> findOneByModel(String model) {
         return this.findAll().stream().filter(t -> t.getModel().equals(model)).findFirst();
     }
 
     public List<Technique> findByCompany(String company) {
         return this.findAll().stream().filter(t -> t.getCompany().equals(company)).toList();
+    }
+
+    @Override
+    protected List<Object> tableValues(Technique technique) {
+        ArrayList<Object> values = new ArrayList<>();
+        values.add(technique.getPrice());
+        values.add(technique.getCompany());
+        values.add(technique.getModel());
+        return values;
+    }
+
+    @Override
+    protected List<String> tableAttributes() {
+        return tableAttributes(Technique.class);
     }
 
     private TechniqueDao() {}

@@ -38,16 +38,6 @@ public class ReviewDaoTest {
     }
 
     @Test
-    void testFindAllTechniquesForReview() {
-        List<Technique> techniques = reviewDao.findAllTechniques(1);
-
-        assertInstanceOf(List.class, techniques,
-                "Помилка: метод findAll повинен повертати List<>");
-        assertFalse(techniques.isEmpty(),
-                "Помилка: повернений список не може бути пустим");
-    }
-
-    @Test
     void testAddReview() {
         Review reviewToAdd = Review.builder().owner(clientDao.findOneById(1).orElseThrow())
                 .technique(techniqueDao.findOneById(1).orElseThrow()).grade(5).text("dadada")

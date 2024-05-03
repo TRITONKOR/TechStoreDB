@@ -5,7 +5,6 @@ import com.tritonkor.domain.dto.TechniqueAddDto;
 import com.tritonkor.domain.exception.ValidationException;
 import com.tritonkor.domain.handler.HandlerFactory;
 import com.tritonkor.domain.handler.TechniqueHandler.PriceHandler;
-import com.tritonkor.persistence.entity.Review;
 import com.tritonkor.persistence.entity.Technique;
 import com.tritonkor.persistence.exception.persistence.EntityNotFoundException;
 import com.tritonkor.persistence.impl.TechniqueDao;
@@ -32,11 +31,6 @@ public class TechniqueServiceImpl extends GenericService<Technique> implements T
     public Technique findOneByModel(String model) {
         return techniqueDao.findOneByModel(model)
                 .orElseThrow(() -> new EntityNotFoundException("This model does not exist."));
-    }
-
-    @Override
-    public List<Review> findAllReviews(Technique technique) {
-        return techniqueDao.findAllReviews(technique.getId());
     }
 
     @Override

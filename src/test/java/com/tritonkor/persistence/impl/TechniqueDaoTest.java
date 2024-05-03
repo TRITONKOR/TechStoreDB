@@ -34,16 +34,6 @@ public class TechniqueDaoTest {
     }
 
     @Test
-    void testFindAllReviewsForTechnique() {
-        List<Review> reviews = techniqueDao.findAllReviews(1);
-
-        assertInstanceOf(List.class, reviews,
-                "Помилка: метод findAll повинен повертати List<>");
-        assertFalse(reviews.isEmpty(),
-                "Помилка: повернений список не може бути пустим");
-    }
-
-    @Test
     void testAddClient() {
         Technique techniqueToAdd = Technique.builder().price(200.00).company("Asus").model("da")
                 .build();

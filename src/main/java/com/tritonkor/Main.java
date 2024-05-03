@@ -21,6 +21,7 @@ public class Main {
         try {
             DbInitialization.apply();
 
+
             DaoFactory daoFactory = DaoFactory.getDaoFactory();
             HandlerFactory handlerFactory = HandlerFactory.getInstance();
 
@@ -45,8 +46,6 @@ public class Main {
             System.out.println(clients);
             System.out.println(techniques);
             System.out.println(reviews);
-
-            System.out.println(techniqueDao.findAllReviews(1));
 
         } finally {
             try {

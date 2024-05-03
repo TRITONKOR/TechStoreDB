@@ -21,61 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ReviewDao extends Dao<Review> {
-
-    // language=H2
-    private static final String FIND_ALL_SQL =
-            """
-            SELECT ID,
-                   OWNER_ID,
-                   TECHNIQUE_ID,
-                   TEXT,
-                   GRADE,
-                   CREATE_TIME
-              FROM REVIEWS
-            """;
-    // language=H2
-    private static final String SAVE_SQL =
-            """
-            INSERT INTO REVIEWS(owner_id, technique_id, text, grade, create_time)
-            VALUES (?, ?, ?, ?, ?);
-            """;
-    // language=H2
-    private static final String UPDATE_SQL =
-            """
-            UPDATE REVIEWS
-               SET OWNER_ID = ?,
-                   TECHNIQUE_ID = ?,
-                   TEXT = ?,
-                   GRADE = ?
-             WHERE ID = ?;
-            """;
-
-    // language=H2
-    private static final String GET_TECHNIQUE_SQL =
-            """
-            SELECT t.id,
-                   t.price,
-                   t.company,
-                   t.model
-              FROM techniques AS t
-                   JOIN techniques_reviews AS t_r
-                     ON t.id = t_r.technique_id
-             WHERE t_r.review_id = ?;
-            """;
-
-    // language=H2
-    private static final String ATTACH_TO_TECHNIQUE_SQL =
-            """
-            INSERT INTO techniques_reviews(technique_id, review_id)
-            VALUES (?, ?);
-            """;
-    // language=H2
-    private static final String DETACH_FROM_TECHNIQUE_SQL =
-            """
-            DELETE FROM techniques_reviews
-                  WHERE technique_id = ? AND review_id = ?;
-            """;
-
     /**
      * We get a filtered collection of entities.
      *
@@ -112,7 +57,7 @@ public class ReviewDao extends Dao<Review> {
                     }
                 };
 
-        String sql = filterSelectHelper.getSql(FIND_ALL_SQL);
+        String sql = filterSelectHelper.getSql(findAllSql(getTableName()));
         parameters.add(filter.limit());
         parameters.add(filter.offset());
 
@@ -123,7 +68,7 @@ public class ReviewDao extends Dao<Review> {
     public Review save(Review review) {
         try (Connection connection = ConnectionPool.get();
                 PreparedStatement statement =
-                        connection.prepareStatement(SAVE_SQL, Statement.RETURN_GENERATED_KEYS)) {
+                        connection.prepareStatement(saveSql(getTableName(), review), Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, review.getOwner().getId());
             statement.setInt(2, review.getTechnique().getId());
             statement.setString(3, review.getText());
@@ -146,7 +91,7 @@ public class ReviewDao extends Dao<Review> {
     @Override
     public boolean update(final Review review) {
         try (Connection connection = ConnectionPool.get();
-                PreparedStatement statement = connection.prepareStatement(UPDATE_SQL)) {
+                PreparedStatement statement = connection.prepareStatement(updateSql(getTableName(), review))) {
             statement.setInt(1, review.getOwner().getId());
             statement.setInt(2, review.getTechnique().getId());
             statement.setString(3, review.getText());
@@ -163,30 +108,6 @@ public class ReviewDao extends Dao<Review> {
     @Override
     protected String getTableName() {
         return "REVIEWS";
-    }
-
-    public boolean attachToReview(int techniqueId, int reviewId) {
-        return super.executeByTwoParams(techniqueId, reviewId, ATTACH_TO_TECHNIQUE_SQL);
-    }
-
-    public boolean detachFromReview(int techniqueId, int reviewId) {
-        return super.executeByTwoParams(techniqueId, reviewId, DETACH_FROM_TECHNIQUE_SQL);
-    }
-
-    public List<Technique> findAllTechniques(int reviewId) {
-        try (Connection connection = ConnectionPool.get();
-                PreparedStatement statement = connection.prepareStatement(GET_TECHNIQUE_SQL)) {
-            statement.setInt(1, reviewId);
-            ResultSet resultSet = statement.executeQuery();
-            var techniques = new ArrayList<Technique>(resultSet.getFetchSize());
-            while (resultSet.next()) {
-                techniques.add(TechniqueDao.getInstance().buildEntity(resultSet));
-            }
-            return techniques;
-        } catch (SQLException e) {
-            throw new PersistenceException(
-                    "При знаходженні всіх записів в %s".formatted(TechniqueDao.class.getSimpleName()));
-        }
     }
 
     @Override
@@ -217,6 +138,22 @@ public class ReviewDao extends Dao<Review> {
 
     public List<Review> findByTechnique(Technique technique) {
         return this.findAll().stream().filter(r -> r.getTechnique().equals(technique)).toList();
+    }
+
+    @Override
+    protected List<Object> tableValues(Review review) {
+        ArrayList<Object> values = new ArrayList<>();
+        values.add(review.getOwner().getId());
+        values.add(review.getTechnique().getId());
+        values.add(review.getText());
+        values.add(review.getGrade());
+        values.add(review.getCreatedAt());
+        return values;
+    }
+
+    @Override
+    protected List<String> tableAttributes() {
+        return tableAttributes(Review.class);
     }
 
     private ReviewDao() {}

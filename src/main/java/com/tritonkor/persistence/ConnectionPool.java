@@ -14,10 +14,7 @@ import java.util.concurrent.BlockingQueue;
 
 public final class ConnectionPool {
 
-    /** Relative path to the database file. */
-    private static final String DB_PATH = Path.of(".", "db", "TechStore").toString();
-
-    private static final String URL = "jdbc:h2:file:%s".formatted(DB_PATH);
+    private static final String URL = "jdbc:h2:file:.db/TechStore";
     private static final String USERNAME = "root";
     private static final String PASSWORD = "root";
     private static final int POOL_SIZE = 10;

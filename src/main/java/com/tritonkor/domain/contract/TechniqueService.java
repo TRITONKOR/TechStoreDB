@@ -10,7 +10,5 @@ public interface TechniqueService {
     List<Technique> findByCompany(String company);
     Technique findOneByModel(String model);
 
-    List<Review> findAllReviews(Technique technique);
-
     Technique save(TechniqueAddDto techniqueAddDto);
 }
